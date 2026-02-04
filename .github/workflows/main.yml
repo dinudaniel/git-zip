@@ -1,0 +1,46 @@
+name: Zip new top-level directories (artifacts)
+
+on:
+  push:
+    branches:
+      - main   # adjust if needed
+
+jobs:
+  zip-dirs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect newly added top-level directories
+        id: detect
+        run: |
+          git diff --name-status ${{ github.event.before }} ${{ github.sha }} \
+            | awk '$1=="A"{print $2}' \
+            | awk -F/ 'NF>1{print $1}' \
+            | sort -u > new_dirs.txt
+
+          echo "New top-level directories:"
+          cat new_dirs.txt || true
+
+      - name: Zip directories
+        run: |
+          mkdir -p zips
+
+          while read dir; do
+            if [ -d "$dir" ]; then
+              echo "Zipping $dir"
+              zip -r "zips/${dir}.zip" "$dir"
+            fi
+          done < new_dirs.txt
+
+      - name: Upload zip artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: new-top-level-directories
+          path: zips/*.zip
+          if-no-files-found: ignore
