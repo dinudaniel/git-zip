@@ -44,3 +44,22 @@ jobs:
           name: new-top-level-directories
           path: zips/*.zip
           if-no-files-found: ignore
+
+      - name: Create releases
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          while read dir; do
+            if [ -d "$dir" ]; then
+              echo "Processing $dir"
+
+              zip -r "${dir}.zip" "$dir"
+
+              # Create release (tag = folder name)
+              gh release create "$dir" \
+                "${dir}.zip" \
+                --title "$dir" \
+                --notes "Release for folder $dir" \
+                || echo "Release $dir already exists"
+            fi
+          done < new_dirs.txt
