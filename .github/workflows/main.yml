@@ -68,7 +68,7 @@ jobs:
               gh release create "$dir" \
                 "zips/${dir}.zip" \
                 --title "$dir" \
-                --notes "Auto-updated release for folder $dir"
+                --notes "Auto-updated release for folder $dir" \
                 --target "${{ github.sha }}"
             fi
           done < changed_dirs.txt
