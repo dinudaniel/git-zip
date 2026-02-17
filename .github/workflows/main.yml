@@ -54,7 +54,9 @@ jobs:
               if gh release view "$dir" >/dev/null 2>&1; then
                 echo "Release exists. Deleting..."
                 gh release delete "$dir" -y
+                echo "release deleted at this step"
                 git push origin --delete "$dir" || true
+                echo "here runs push delete"
                 sleep 5
               fi
          
