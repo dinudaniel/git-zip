@@ -45,6 +45,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          
           while read dir; do
             if [ -f "zips/${dir}.zip" ]; then
               echo "Processing release for $dir"
@@ -54,8 +55,9 @@ jobs:
                 echo "Release exists. Deleting..."
                 gh release delete "$dir" -y
                 git push origin --delete "$dir" || true
+                sleep 5
               fi
-
+         
               # Create new release
               gh release create "$dir" \
                 "zips/${dir}.zip" \
