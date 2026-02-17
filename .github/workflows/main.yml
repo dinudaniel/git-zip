@@ -1,13 +1,16 @@
-name: Zip new top-level directories (artifacts)
+name: Zip new top-level directories (artifacts + releases)
 
 on:
   push:
     branches:
-      - main   # adjust if needed
+      - main
 
 jobs:
   zip-dirs:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write   # REQUIRED for release creation
 
     steps:
       - name: Checkout repo
@@ -16,7 +19,6 @@ jobs:
           fetch-depth: 0
 
       - name: Detect newly added top-level directories
-        id: detect
         run: |
           git diff --name-status ${{ github.event.before }} ${{ github.sha }} \
             | awk '$1=="A"{print $2}' \
@@ -38,7 +40,6 @@ jobs:
           done < new_dirs.txt
 
       - name: Upload zip artifacts
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: new-top-level-directories
@@ -50,14 +51,11 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           while read dir; do
-            if [ -d "$dir" ]; then
-              echo "Processing $dir"
+            if [ -f "zips/${dir}.zip" ]; then
+              echo "Creating release for $dir"
 
-              zip -r "${dir}.zip" "$dir"
-
-              # Create release (tag = folder name)
               gh release create "$dir" \
-                "${dir}.zip" \
+                "zips/${dir}.zip" \
                 --title "$dir" \
                 --notes "Release for folder $dir" \
                 || echo "Release $dir already exists"
