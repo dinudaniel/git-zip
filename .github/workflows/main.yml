@@ -24,6 +24,7 @@ jobs:
           git diff --name-status ${{ github.event.before }} ${{ github.sha }} \
             | awk '$1=="A" || $1=="M"{print $2}' \
             | awk -F/ 'NF>1{print $1}' \
+            | grep -v '^\.' 
             | sort -u > changed_dirs.txt
 
           echo "Changed top-level directories:"
